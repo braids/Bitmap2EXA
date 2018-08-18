@@ -21,6 +21,18 @@
     <ClInclude Include="targetver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="BitArray.h">
+      <Filter>Resource Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EXASprite.h">
+      <Filter>Resource Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EXACode.h">
+      <Filter>Resource Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EXAHeaders.h">
+      <Filter>Resource Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
