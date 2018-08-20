@@ -109,7 +109,6 @@ struct EXASpriteMap {
 
 	EXASpriteMap(BitArray ba) {
 		EXASprite* headsprite;
-		unsigned char currentbyte;
 		bool pixel;
 		int colOffset = 0, rowOffset = 0;
 

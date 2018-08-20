@@ -61,7 +61,7 @@ public:
 	void AddDATA(char* data) {
 		int remaininglength;
 
-		for (int j = 0; j < strlen(data); j += EXA_DATA_LEN) {
+		for (int j = 0; j < (int)strlen(data); j += EXA_DATA_LEN) {
 			// Get remaining length until end of string
 			remaininglength = strlen(&data[j]);
 
