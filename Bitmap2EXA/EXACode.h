@@ -162,11 +162,14 @@ public:
 			EXAHead->Add("MARK LOOP\nWAIT\nJUMP LOOP\n\n");
 		}
 
-		// Print code to screen
+		PrintInstructions(EXABuffer, spriteInstrList.length);
+	}
+
+	static void PrintInstructions(EXAInstr* Inst, int length) {
 		printf("======== BMP2EXA ========\n\n");
-		for (int i = 0; i < spriteInstrList.length; i++) {
+		for (int i = 0; i < length; i++) {
 			printf("========== %2d ==========\n\n", i);
-			printf(EXABuffer[i].text);
+			printf(Inst[i].text);
 		}
 		printf("=========================\n\n");
 	}

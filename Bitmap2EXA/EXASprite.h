@@ -104,6 +104,7 @@ struct EXASpriteMap {
 	int width = 0, height = 0;
 	EXASprite map[MAX_SPRITES_W][MAX_SPRITES_H];
 	bool booldata[BMP_MAX_W*BMP_MAX_H];
+	bool* booldatahead = booldata;
 	int booldatasize = 0;
 
 	EXASpriteMap(BitArray ba) {
@@ -112,52 +113,55 @@ struct EXASpriteMap {
 		bool pixel;
 		int colOffset = 0, rowOffset = 0;
 
-		// Set width and height
+		// Set sprite map width and height
 		width = GETSPRITENUM(ba.width) + 1;
 		height = GETSPRITENUM(ba.height) + 1;
 
 		// Init bool data
 		for (int i = 0; i < BMP_MAX_W*BMP_MAX_H; i++) booldata[i] = false;
 
-		// Check each byte in BMP data
-		for (int i = 0; i < ba.length; i++) {
-			// If padding bytes found, discard
-			if (i % (width + BMP_PADDING_SIZE) > width) {
-				colOffset++;
-				continue;
-			}
+		//// NOTE: 
+		//// - 4 chars to each row block
+		//// - # of bits in row of BMP data will be (x * 32) width where x = # of row blocks
+		//// - # of row blocks = (image_width / 32) + 1 | Implemented as Raw_Length()
 
-			//iterate thru each byte in char
-			for (int b = 7; b >= 0; b--) {
-				// Get the bit in the current row with column offset applied
-				int rowbit = (7 - b) + ((i - colOffset) * 8);
+		//// Future work: Make the below stuff prettier.
 
-				// If past the width margin, add to row offset and continue
-				if ((rowbit % (ba.width + BMP_PADDING_SIZE + 1)) >= ba.width) {
-					rowOffset++;
-					continue;
+		// Read in data a row at a time
+		for (int row = 0; row < ba.height; row++) {
+			printf("Row:%d\n", row);
+
+			// Read each block in BitArray
+			for (int block = 0; block < ba.BlocksWidth(); block++) {
+				printf("CurrentBlock:%d\n", block);
+				
+				// Read each char in the block (4 chars to each block)
+				for (int blockchar = 0; blockchar < BMP_BLOCK_CHAR_SIZE; blockchar++) {
+
+					// Read each bit in the char
+					for (int bit = 7; bit >= 0; bit--) {
+
+						// Get location of char in source data
+						int datalocation = (row * BMP_BLOCK_CHAR_SIZE * ba.BlocksWidth()) + (block * BMP_BLOCK_CHAR_SIZE) + blockchar;
+
+						// Get location of bit in destination data
+						int booldatalocation = (row * BMP_BLOCK_BIT_SIZE * ba.BlocksWidth()) + (block * BMP_BLOCK_BIT_SIZE) + (blockchar * 8) + (7 - bit);
+
+						// Break if max width reached (destination bit position % block bit width greater than width)
+						if (booldatalocation % (ba.BlocksWidth() * BMP_BLOCK_BIT_SIZE) >= ba.width) {
+							// Reset loops (break kills the whole thing)
+							bit = 0;
+							blockchar = BMP_BLOCK_CHAR_SIZE;
+							block = ba.BlocksWidth();
+							continue;
+						}
+
+						// Set destination bit true if source bit is false
+						booldata[booldatalocation] = !((ba.data[datalocation] >> bit) & 0x01);
+					}
 				}
-
-				// Subtract row offset
-				rowbit -= rowOffset;
-
-				// set bool data if char data bit is 1 or 0
-				currentbyte = ba.data[i];
-				booldata[rowbit] = !((currentbyte >> b) & 0x01);
-
-				// Increment bool count, bail if max size reached
-				booldatasize++;
-				if (booldatasize >= BMP_MAX_W * BMP_MAX_H)
-					break;
 			}
-			if (booldatasize >= BMP_MAX_W * BMP_MAX_H)
-				break;
 		}
-
-		// Init sprite maps
-		for (int y = 0; y < height; y++)
-			for (int x = 0; x < width; x++)
-				map[x][y];
 
 		// Copy BMP data into sprite map
 		for (int y = 0; y < ba.height; y++) {
@@ -165,8 +169,8 @@ struct EXASpriteMap {
 				// Get sprite at xy position
 				headsprite = &map[GETSPRITENUM(x)][GETSPRITENUM(y)];
 
-				// Get BMP pixel at xy location. Reverse Y loading.
-				pixel = booldata[x + ((ba.height * ba.width) - ((y + 1) * ba.width))];
+				// Get pixel information from bool data array
+				pixel = booldata[x + ((ba.height - y - 1) * ba.BitWidth())];
 
 				// Set sprite pixel at xy location
 				headsprite->SetPixelFromMapPos(x, y, pixel);
