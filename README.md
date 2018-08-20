@@ -8,7 +8,7 @@ Open the solution up in Visual C++ and compile.
 
 To change the default image used when running Bitmap2EXA in Visual Studio, open the Bitmap2EXA project properties and change the first argument in "Configuration Properties > Debugging > Command Arguments" to the file path of your choice.
 
-# BMP Files
+### BMP Files
 Draw your desired sprite image in black and white, then save the image as a Monochrome BMP. Pixels drawn as white will be converted into DATA lines and GP draw instructions.
 
 ## Usage
